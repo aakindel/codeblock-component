@@ -1,5 +1,6 @@
 import type { NextPage } from "next";
 import Head from "next/head";
+import Container from "@/design_systems/mainds/components/Container";
 
 const Home: NextPage = () => {
   return (
@@ -11,7 +12,11 @@ const Home: NextPage = () => {
       </Head>
 
       <main>
-        <p>Default template removed.</p>
+        <Container type="screen-sm">
+          <div style={{ margin: "128px auto" }}>
+            <p>Default template removed.</p>
+          </div>
+        </Container>
       </main>
     </div>
   );
