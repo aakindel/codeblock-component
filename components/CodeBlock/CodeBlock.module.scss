@@ -1,7 +1,5 @@
 .codeblock-container {
-  border-radius: 8px;
   overflow: hidden;
-  height: 500px;
 }
 
 .pre {
@@ -11,8 +9,6 @@
 
 .code {
   display: block;
-  font-size: 13px;
-  line-height: 20px;
   font-family: SF Mono Regular;
-  padding: 24px;
+  width: max-content;
 }
