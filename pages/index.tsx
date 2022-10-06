@@ -62,6 +62,10 @@ const Home: NextPage = () => {
               <CodeBlockHeading>Hide Line Numbers</CodeBlockHeading>
               <CodeBlock code={codeString} showLineNumbers={false} />
             </div>
+            <div style={{ margin: "80px auto" }}>
+              <CodeBlockHeading>Wrap Lines</CodeBlockHeading>
+              <CodeBlock code={codeString} wrapLines={true} />
+            </div>
           </div>
         </Container>
       </main>

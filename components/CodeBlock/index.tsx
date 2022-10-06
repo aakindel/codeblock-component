@@ -1,6 +1,7 @@
 import Highlight, { defaultProps, Language } from "prism-react-renderer";
 import CodeBlockStyles from "./CodeBlock.module.scss";
 import theme from "prism-react-renderer/themes/vsDark";
+import { useEffect, useRef, useState } from "react";
 
 type CodeBlockOptions = {
   pxBorderRadius?: number;
@@ -21,6 +22,7 @@ type CodeBlockProps = {
   code?: string;
   language?: Language;
   showLineNumbers?: boolean;
+  wrapLines?: boolean;
   options?: CodeBlockOptions;
 };
 
@@ -32,6 +34,7 @@ const CodeBlock = ({
   code = "",
   language = "jsx",
   showLineNumbers = true,
+  wrapLines = false,
   options,
 }: CodeBlockProps) => {
   const localOptions: LocalCodeBlockOptions = {
@@ -51,6 +54,20 @@ const CodeBlock = ({
   const isCodeEmpty = code === "";
   const lastLineIndex = getStringLineCount(code) - 1;
 
+  const [wrappedLineHeights, setWrappedLineHeights] = useState<number[]>([]);
+
+  const linesRef = useRef<Array<HTMLDivElement | null>>([]);
+
+  useEffect(() => {
+    setWrappedLineHeights(
+      linesRef.current.map((line, lineIndex) =>
+        line && lineIndex === lastLineIndex
+          ? line?.offsetHeight - localOptions.pxCodePaddingBottom
+          : line?.offsetHeight
+      ) as number[]
+    );
+  }, [linesRef, lastLineIndex, localOptions.pxCodePaddingBottom]);
+
   return (
     <Highlight {...defaultProps} code={code} language={language} theme={theme}>
       {({ className, style, tokens, getLineProps, getTokenProps }) => (
@@ -68,6 +85,8 @@ const CodeBlock = ({
               fontSize: `${localOptions.pxCodeFontSize}px`,
               lineHeight: `${localOptions.pxLineHeight}px`,
               paddingTop: `${localOptions.pxCodePaddingTop}px`,
+              overflowY: "scroll",
+              overflowX: wrapLines ? "hidden" : "scroll",
             }}
           >
             <div
@@ -89,7 +108,16 @@ const CodeBlock = ({
                   return isCodeEmpty ? null : (
                     <span
                       className={`${CodeBlockStyles["block-line-number"]}`}
-                      style={{ height: `${localOptions.pxLineHeight}px` }}
+                      style={{
+                        visibility:
+                          // hide line number while wrappedLineHeights loads
+                          !wrapLines || wrappedLineHeights[lineIndex]
+                            ? "visible"
+                            : "hidden",
+                        height: wrapLines
+                          ? `${wrappedLineHeights[lineIndex]}px`
+                          : `${localOptions.pxLineHeight}px`,
+                      }}
                       key={lineIndex + 1}
                     >
                       {lineIndex + 1}
@@ -103,8 +131,8 @@ const CodeBlock = ({
               style={{
                 paddingLeft: `${
                   showLineNumbers
-                    ? (localOptions.pxCodePaddingLeft as number) -
-                      (localOptions.pxLineNumberPaddingRight as number)
+                    ? localOptions.pxCodePaddingLeft -
+                      localOptions.pxLineNumberPaddingRight
                     : localOptions.pxCodePaddingLeft
                 }px`,
                 paddingRight: `${localOptions.pxCodePaddingRight}px`,
@@ -112,12 +140,16 @@ const CodeBlock = ({
             >
               {tokens.map((line, lineIndex) => (
                 <div
+                  ref={(el) =>
+                    linesRef.current ? (linesRef.current[lineIndex] = el) : null
+                  }
                   key={lineIndex}
                   {...getLineProps({ line, key: lineIndex })}
                 >
                   <span
                     style={{
                       display: "block",
+                      whiteSpace: wrapLines ? "pre-wrap" : "pre",
                       paddingBottom:
                         lineIndex === lastLineIndex
                           ? `${localOptions.pxCodePaddingBottom}px`
