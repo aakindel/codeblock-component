@@ -67,6 +67,21 @@ const Home: NextPage = () => {
               <CodeBlock code={codeString} wrapLines={true} />
             </div>
           </div>
+          <div style={{ margin: "80px auto" }}>
+            <CodeBlockHeading>Tabs and Files</CodeBlockHeading>
+            <CodeBlock
+              files={{
+                "/App.tsx": {
+                  code: codeString,
+                },
+                "/App2.css": {
+                  code: `* {
+  box-sizing: border-box;
+}`,
+                },
+              }}
+            />
+          </div>
         </Container>
       </main>
     </div>

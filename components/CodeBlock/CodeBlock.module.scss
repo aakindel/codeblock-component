@@ -1,3 +1,23 @@
+.tabs {
+  display: flex;
+  flex-direction: column;
+}
+
+.tab-list {
+  display: flex;
+  align-items: center;
+}
+
+.tab {
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.tab-panel {
+  overflow: hidden;
+  height: 100%;
+}
+
 .codeblock-container {
   overflow: hidden;
 }
