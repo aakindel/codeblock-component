@@ -1,0 +1,17 @@
+.codeblock-container {
+  border-radius: 8px;
+  overflow: scroll;
+  max-height: 500px;
+}
+
+.pre {
+  min-width: max-content;
+}
+
+.code {
+  display: block;
+  font-size: 13px;
+  line-height: 20px;
+  font-family: SF Mono Regular;
+  padding: 24px;
+}
