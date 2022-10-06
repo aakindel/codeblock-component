@@ -24,6 +24,15 @@ type CodeBlockOptions = {
 
 type LocalCodeBlockOptions = Required<CodeBlockOptions>;
 
+type CodeBlockContentProps = {
+  code: string;
+  language: Language;
+  showLineNumbers: boolean;
+  wrapLines: boolean;
+  localOptions: LocalCodeBlockOptions;
+  localColorOptions: LocalColorOptions;
+};
+
 type CodeBlockProps = {
   code?: string;
   language?: Language;
@@ -37,33 +46,14 @@ const getStringLineCount = (userString: string): number => {
   return userString.split(/\r\n|\r|\n/).length;
 };
 
-const CodeBlock = ({
-  code = "",
-  language = "jsx",
-  showLineNumbers = true,
-  wrapLines = false,
-  options,
-  colorOptions,
-}: CodeBlockProps) => {
-  const localOptions: LocalCodeBlockOptions = {
-    pxBorderRadius: 5,
-    pxHeight: 500,
-    pxCodeFontSize: 13,
-    pxLineHeight: 20,
-    pxCodePaddingTop: 24,
-    pxCodePaddingBottom: 24,
-    pxCodePaddingLeft: 24,
-    pxCodePaddingRight: 24,
-    pxLineNumberPaddingLeft: 16,
-    pxLineNumberPaddingRight: 8,
-    ...options,
-  };
-
-  const localColorOptions: LocalColorOptions = {
-    lineNumberColor: "#FFF",
-    ...colorOptions,
-  };
-
+const CodeBlockContent = ({
+  code,
+  language,
+  showLineNumbers,
+  wrapLines,
+  localOptions,
+  localColorOptions,
+}: CodeBlockContentProps) => {
   const isCodeEmpty = code === "";
   const lastLineIndex = getStringLineCount(code) - 1;
 
@@ -84,100 +74,152 @@ const CodeBlock = ({
   return (
     <Highlight {...defaultProps} code={code} language={language} theme={theme}>
       {({ className, style, tokens, getLineProps, getTokenProps }) => (
+        <pre
+          className={`${className} ${CodeBlockStyles["pre"]}`}
+          style={{
+            ...style,
+            fontSize: `${localOptions.pxCodeFontSize}px`,
+            lineHeight: `${localOptions.pxLineHeight}px`,
+            paddingTop: `${localOptions.pxCodePaddingTop}px`,
+            overflowY: "scroll",
+            overflowX: wrapLines ? "hidden" : "scroll",
+          }}
+        >
+          <div
+            className={`${CodeBlockStyles["block-line-numbers-list"]}`}
+            style={{
+              display: `${showLineNumbers ? "block" : "none"}`,
+            }}
+          >
+            <div
+              className={`${CodeBlockStyles["block-line-number-container"]}`}
+              style={{
+                backgroundColor: style.backgroundColor as string,
+                paddingLeft: `${localOptions.pxLineNumberPaddingLeft}px`,
+                paddingRight: `${localOptions.pxLineNumberPaddingRight}px`,
+                lineHeight: `${localOptions.pxLineHeight}px`,
+              }}
+            >
+              {tokens.map((line, lineIndex) => {
+                return isCodeEmpty ? null : (
+                  <span
+                    className={`${CodeBlockStyles["block-line-number"]}`}
+                    style={{
+                      color: localColorOptions.lineNumberColor,
+                      visibility:
+                        // hide line number while wrappedLineHeights loads
+                        !wrapLines || wrappedLineHeights[lineIndex]
+                          ? "visible"
+                          : "hidden",
+                      height: wrapLines
+                        ? `${wrappedLineHeights[lineIndex]}px`
+                        : `${localOptions.pxLineHeight}px`,
+                    }}
+                    key={lineIndex + 1}
+                  >
+                    {lineIndex + 1}
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+          <code
+            className={`${CodeBlockStyles["code"]}`}
+            style={{
+              paddingLeft: `${
+                showLineNumbers
+                  ? localOptions.pxCodePaddingLeft -
+                    localOptions.pxLineNumberPaddingRight
+                  : localOptions.pxCodePaddingLeft
+              }px`,
+              paddingRight: `${localOptions.pxCodePaddingRight}px`,
+            }}
+          >
+            {tokens.map((line, lineIndex) => (
+              <div
+                ref={(el) =>
+                  linesRef.current ? (linesRef.current[lineIndex] = el) : null
+                }
+                key={lineIndex}
+                {...getLineProps({ line, key: lineIndex })}
+              >
+                <span
+                  style={{
+                    display: "block",
+                    whiteSpace: wrapLines ? "pre-wrap" : "pre",
+                    paddingBottom:
+                      lineIndex === lastLineIndex
+                        ? `${localOptions.pxCodePaddingBottom}px`
+                        : "0px",
+                  }}
+                >
+                  {line.map((token, key) => (
+                    <span key={key} {...getTokenProps({ token, key })} />
+                  ))}
+                </span>
+              </div>
+            ))}
+          </code>
+        </pre>
+      )}
+    </Highlight>
+  );
+};
+
+const CodeBlock = (props: CodeBlockProps) => {
+  const {
+    code = "",
+    language = "jsx",
+    showLineNumbers = true,
+    wrapLines = false,
+    options,
+    colorOptions,
+  } = props;
+
+  const localProps = {
+    code,
+    language,
+    showLineNumbers,
+    wrapLines,
+  };
+
+  const localOptions: LocalCodeBlockOptions = {
+    pxBorderRadius: 5,
+    pxHeight: 500,
+    pxCodeFontSize: 13,
+    pxLineHeight: 20,
+    pxCodePaddingTop: 24,
+    pxCodePaddingBottom: 24,
+    pxCodePaddingLeft: 24,
+    pxCodePaddingRight: 24,
+    pxLineNumberPaddingLeft: 16,
+    pxLineNumberPaddingRight: 8,
+    ...options,
+  };
+
+  const localColorOptions: LocalColorOptions = {
+    lineNumberColor: "#FFF",
+    ...colorOptions,
+  };
+
+  const codeBlockContentArgs: CodeBlockContentProps = {
+    ...localProps,
+    localOptions,
+    localColorOptions,
+  };
+
+  return (
+    <Highlight {...defaultProps} code={code} language={language} theme={theme}>
+      {({ style }) => (
         <div
           className={`${CodeBlockStyles["codeblock-container"]}`}
           style={{
+            backgroundColor: style.backgroundColor as string,
             borderRadius: `${localOptions.pxBorderRadius}px`,
             height: `${localOptions.pxHeight}px`,
           }}
         >
-          <pre
-            className={`${className} ${CodeBlockStyles["pre"]}`}
-            style={{
-              ...style,
-              fontSize: `${localOptions.pxCodeFontSize}px`,
-              lineHeight: `${localOptions.pxLineHeight}px`,
-              paddingTop: `${localOptions.pxCodePaddingTop}px`,
-              overflowY: "scroll",
-              overflowX: wrapLines ? "hidden" : "scroll",
-            }}
-          >
-            <div
-              className={`${CodeBlockStyles["block-line-numbers-list"]}`}
-              style={{
-                display: `${showLineNumbers ? "block" : "none"}`,
-              }}
-            >
-              <div
-                className={`${CodeBlockStyles["block-line-number-container"]}`}
-                style={{
-                  backgroundColor: style.backgroundColor as string,
-                  paddingLeft: `${localOptions.pxLineNumberPaddingLeft}px`,
-                  paddingRight: `${localOptions.pxLineNumberPaddingRight}px`,
-                  lineHeight: `${localOptions.pxLineHeight}px`,
-                }}
-              >
-                {tokens.map((line, lineIndex) => {
-                  return isCodeEmpty ? null : (
-                    <span
-                      className={`${CodeBlockStyles["block-line-number"]}`}
-                      style={{
-                        color: localColorOptions.lineNumberColor,
-                        visibility:
-                          // hide line number while wrappedLineHeights loads
-                          !wrapLines || wrappedLineHeights[lineIndex]
-                            ? "visible"
-                            : "hidden",
-                        height: wrapLines
-                          ? `${wrappedLineHeights[lineIndex]}px`
-                          : `${localOptions.pxLineHeight}px`,
-                      }}
-                      key={lineIndex + 1}
-                    >
-                      {lineIndex + 1}
-                    </span>
-                  );
-                })}
-              </div>
-            </div>
-            <code
-              className={`${CodeBlockStyles["code"]}`}
-              style={{
-                paddingLeft: `${
-                  showLineNumbers
-                    ? localOptions.pxCodePaddingLeft -
-                      localOptions.pxLineNumberPaddingRight
-                    : localOptions.pxCodePaddingLeft
-                }px`,
-                paddingRight: `${localOptions.pxCodePaddingRight}px`,
-              }}
-            >
-              {tokens.map((line, lineIndex) => (
-                <div
-                  ref={(el) =>
-                    linesRef.current ? (linesRef.current[lineIndex] = el) : null
-                  }
-                  key={lineIndex}
-                  {...getLineProps({ line, key: lineIndex })}
-                >
-                  <span
-                    style={{
-                      display: "block",
-                      whiteSpace: wrapLines ? "pre-wrap" : "pre",
-                      paddingBottom:
-                        lineIndex === lastLineIndex
-                          ? `${localOptions.pxCodePaddingBottom}px`
-                          : "0px",
-                    }}
-                  >
-                    {line.map((token, key) => (
-                      <span key={key} {...getTokenProps({ token, key })} />
-                    ))}
-                  </span>
-                </div>
-              ))}
-            </code>
-          </pre>
+          <CodeBlockContent {...codeBlockContentArgs} />
         </div>
       )}
     </Highlight>
