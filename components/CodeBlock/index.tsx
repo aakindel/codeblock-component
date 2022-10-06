@@ -3,6 +3,12 @@ import CodeBlockStyles from "./CodeBlock.module.scss";
 import theme from "prism-react-renderer/themes/vsDark";
 import { useEffect, useRef, useState } from "react";
 
+type ColorOptions = {
+  lineNumberColor?: string;
+};
+
+type LocalColorOptions = Required<ColorOptions>;
+
 type CodeBlockOptions = {
   pxBorderRadius?: number;
   pxHeight?: number;
@@ -24,6 +30,7 @@ type CodeBlockProps = {
   showLineNumbers?: boolean;
   wrapLines?: boolean;
   options?: CodeBlockOptions;
+  colorOptions?: ColorOptions;
 };
 
 const getStringLineCount = (userString: string): number => {
@@ -36,6 +43,7 @@ const CodeBlock = ({
   showLineNumbers = true,
   wrapLines = false,
   options,
+  colorOptions,
 }: CodeBlockProps) => {
   const localOptions: LocalCodeBlockOptions = {
     pxBorderRadius: 5,
@@ -49,6 +57,11 @@ const CodeBlock = ({
     pxLineNumberPaddingLeft: 16,
     pxLineNumberPaddingRight: 8,
     ...options,
+  };
+
+  const localColorOptions: LocalColorOptions = {
+    lineNumberColor: "#FFF",
+    ...colorOptions,
   };
 
   const isCodeEmpty = code === "";
@@ -109,6 +122,7 @@ const CodeBlock = ({
                     <span
                       className={`${CodeBlockStyles["block-line-number"]}`}
                       style={{
+                        color: localColorOptions.lineNumberColor,
                         visibility:
                           // hide line number while wrappedLineHeights loads
                           !wrapLines || wrappedLineHeights[lineIndex]
