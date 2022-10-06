@@ -11,6 +11,8 @@ type CodeBlockOptions = {
   pxCodePaddingBottom?: number;
   pxCodePaddingLeft?: number;
   pxCodePaddingRight?: number;
+  pxLineNumberPaddingLeft?: number;
+  pxLineNumberPaddingRight?: number;
 };
 
 type LocalCodeBlockOptions = Required<CodeBlockOptions>;
@@ -18,12 +20,18 @@ type LocalCodeBlockOptions = Required<CodeBlockOptions>;
 type CodeBlockProps = {
   code?: string;
   language?: Language;
+  showLineNumbers?: boolean;
   options?: CodeBlockOptions;
+};
+
+const getStringLineCount = (userString: string): number => {
+  return userString.split(/\r\n|\r|\n/).length;
 };
 
 const CodeBlock = ({
   code = "",
   language = "jsx",
+  showLineNumbers = true,
   options,
 }: CodeBlockProps) => {
   const localOptions: LocalCodeBlockOptions = {
@@ -35,8 +43,13 @@ const CodeBlock = ({
     pxCodePaddingBottom: 24,
     pxCodePaddingLeft: 24,
     pxCodePaddingRight: 24,
+    pxLineNumberPaddingLeft: 16,
+    pxLineNumberPaddingRight: 8,
     ...options,
   };
+
+  const isCodeEmpty = code === "";
+  const lastLineIndex = getStringLineCount(code) - 1;
 
   return (
     <Highlight {...defaultProps} code={code} language={language} theme={theme}>
@@ -50,24 +63,71 @@ const CodeBlock = ({
         >
           <pre
             className={`${className} ${CodeBlockStyles["pre"]}`}
-            style={{ ...style }}
+            style={{
+              ...style,
+              fontSize: `${localOptions.pxCodeFontSize}px`,
+              lineHeight: `${localOptions.pxLineHeight}px`,
+              paddingTop: `${localOptions.pxCodePaddingTop}px`,
+            }}
           >
+            <div
+              className={`${CodeBlockStyles["block-line-numbers-list"]}`}
+              style={{
+                display: `${showLineNumbers ? "block" : "none"}`,
+              }}
+            >
+              <div
+                className={`${CodeBlockStyles["block-line-number-container"]}`}
+                style={{
+                  backgroundColor: style.backgroundColor as string,
+                  paddingLeft: `${localOptions.pxLineNumberPaddingLeft}px`,
+                  paddingRight: `${localOptions.pxLineNumberPaddingRight}px`,
+                  lineHeight: `${localOptions.pxLineHeight}px`,
+                }}
+              >
+                {tokens.map((line, lineIndex) => {
+                  return isCodeEmpty ? null : (
+                    <span
+                      className={`${CodeBlockStyles["block-line-number"]}`}
+                      style={{ height: `${localOptions.pxLineHeight}px` }}
+                      key={lineIndex + 1}
+                    >
+                      {lineIndex + 1}
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
             <code
               className={`${CodeBlockStyles["code"]}`}
               style={{
-                fontSize: `${localOptions.pxCodeFontSize}px`,
-                lineHeight: `${localOptions.pxLineHeight}px`,
-                paddingTop: `${localOptions.pxCodePaddingTop}px`,
-                paddingBottom: `${localOptions.pxCodePaddingBottom}px`,
-                paddingLeft: `${localOptions.pxCodePaddingLeft}px`,
+                paddingLeft: `${
+                  showLineNumbers
+                    ? (localOptions.pxCodePaddingLeft as number) -
+                      (localOptions.pxLineNumberPaddingRight as number)
+                    : localOptions.pxCodePaddingLeft
+                }px`,
                 paddingRight: `${localOptions.pxCodePaddingRight}px`,
               }}
             >
-              {tokens.map((line, i) => (
-                <div key={i} {...getLineProps({ line, key: i })}>
-                  {line.map((token, key) => (
-                    <span key={key} {...getTokenProps({ token, key })} />
-                  ))}
+              {tokens.map((line, lineIndex) => (
+                <div
+                  key={lineIndex}
+                  {...getLineProps({ line, key: lineIndex })}
+                >
+                  <span
+                    style={{
+                      display: "block",
+                      paddingBottom:
+                        lineIndex === lastLineIndex
+                          ? `${localOptions.pxCodePaddingBottom}px`
+                          : "0px",
+                    }}
+                  >
+                    {line.map((token, key) => (
+                      <span key={key} {...getTokenProps({ token, key })} />
+                    ))}
+                  </span>
                 </div>
               ))}
             </code>

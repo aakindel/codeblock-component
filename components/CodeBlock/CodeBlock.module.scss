@@ -3,8 +3,28 @@
 }
 
 .pre {
+  display: flex;
   overflow: scroll;
   height: 100%;
+}
+
+.block-line-numbers-list {
+  position: sticky;
+  left: 0;
+}
+
+.block-line-number-container {
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+  user-select: none;
+}
+
+.block-line-number {
+  font-family: SF Mono Regular;
+  font-size: 0.6em;
+  padding-top: 1px;
+  opacity: 0.5;
 }
 
 .code {

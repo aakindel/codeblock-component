@@ -58,6 +58,10 @@ const Home: NextPage = () => {
               <CodeBlockHeading>Default Code Block</CodeBlockHeading>
               <CodeBlock code={codeString} />
             </div>
+            <div style={{ margin: "80px auto" }}>
+              <CodeBlockHeading>Hide Line Numbers</CodeBlockHeading>
+              <CodeBlock code={codeString} showLineNumbers={false} />
+            </div>
           </div>
         </Container>
       </main>
