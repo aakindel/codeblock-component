@@ -3,7 +3,7 @@ import Head from "next/head";
 import Container from "@/design_systems/mainds/components/Container";
 import CodeBlock from "@/components/CodeBlock";
 
-const codeString = `import type { NextPage } from "next";
+export const codeString = `import type { NextPage } from "next";
 import Head from "next/head";
 import Container from "@/design_systems/mainds/components/Container";
 import CodeBlock, { defaultCodeString } from "@/components/CodeBlock";
