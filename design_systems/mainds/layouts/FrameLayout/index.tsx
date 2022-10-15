@@ -147,7 +147,10 @@ export const DefaultFCLayout = ({
 
   const postMessageToParent = useCallback(
     (message: MessageFromChild) => {
-      window.parent.postMessage(message, parentURL);
+      // https://stackoverflow.com/a/47305856 : avoid postMessage error
+      if (window.location !== window.parent.location) {
+        window.parent.postMessage(message, parentURL);
+      }
     },
     [parentURL]
   );
